@@ -130,3 +130,24 @@ func ModifyGameById(game models.Game) error {
 
 	return nil
 }
+
+func DeletedGame(id int) error {
+
+	// Vérifie si ID EXISTE
+
+	_, err := Conn.Query("SELECT id FROM partiel.game WHERE id = ?", id)
+	if err != nil {
+
+		return fmt.Errorf("le jeu n'existe pas : %d", id)
+
+	}
+
+	// sUPPRESSION
+	_, err = Conn.Exec(
+		"DELETE FROM partiel.game WHERE id = ?", id)
+	if err != nil {
+		return fmt.Errorf("mise à jour échouée : %v", err)
+	}
+
+	return nil
+}

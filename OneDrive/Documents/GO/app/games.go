@@ -52,7 +52,7 @@ func CreateGame(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w,
-			"Impossible de décoder un modèle user au format json",
+			"Impossible de décoder un modèle game au format json",
 			http.StatusBadRequest)
 		return
 
@@ -78,6 +78,7 @@ func CreateGame(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetGameById(w http.ResponseWriter, r *http.Request) {
+
 	idStr := r.PathValue("id")
 
 	id, err := strconv.Atoi(idStr)
@@ -139,5 +140,30 @@ func ModifyGameById(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
+
+}
+
+func DeletedGame(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+		return
+	}
+
+	idStr := r.PathValue("id")
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "id invalide", http.StatusBadRequest)
+		return
+	}
+
+	err = bdd.DeletedGame(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintln(w, "jeu suppr")
 
 }
