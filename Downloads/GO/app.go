@@ -1,0 +1,41 @@
+package main
+
+import (
+	"fmt"
+	"game/app"
+	"game/bdd"
+	"net/http"
+)
+
+func Health(w http.ResponseWriter, r *http.Request) {
+	err := bdd.Conn.Ping()
+
+	if err != nil {
+		panic(err)
+	}
+	fmt.Fprintln(w, "ping à la bdd")
+}
+
+func main() {
+	bdd.Conn = bdd.NewDB()
+	http.HandleFunc("GET /{$}", Health)
+
+	http.HandleFunc("GET /games/", app.GetAllGames)
+	http.HandleFunc("POST /games/", app.CreateGame)
+	http.HandleFunc("GET /games/{id}/{$}", app.GetGameById)
+	http.HandleFunc("DELETE /games/{id}", app.DeletedGame)
+	http.HandleFunc("PUT /games/{id}", app.ModifyGameById)
+
+	http.HandleFunc("GET /libraries/{$}", app.GetAllLibrarie)
+	http.HandleFunc("POST /libraries/", app.CreateLibrarie)
+	http.HandleFunc("GET /libraries/{id}/{$}", app.GetLibrarieById)
+	http.HandleFunc("DELETE /libraries/{id}", app.DeletedLibrarie)
+	http.HandleFunc("PATCH /libraries/{id}/premium", app.PatchLibrarieById)
+
+	http.HandleFunc("POST /libraries/{library_id}/games/{game_id}", app.AddGameInLibrarie)
+	http.HandleFunc("GET /libraries/{library_id}/games", app.DeleteGameInLib)
+	http.HandleFunc("DELETE /libraries/{library_id}/games/{game_id}", app.GetGamesInLibrary)
+
+	fmt.Println("test de : http://localhost:8081")
+	http.ListenAndServe(":8081", nil)
+}
