@@ -126,17 +126,10 @@ func ModifyGameById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 🔴 LIGNE CRUCIALE
+
 	gameDto.Id = id
 
-	// ✅ validation AVANT la BDD
-	errorMsgs := verifyGameDto(gameDto)
-	if len(errorMsgs) > 0 {
-		errFormated, _ := json.Marshal(errorMsgs)
-		w.Header().Set("Content-Type", "application/json")
-		http.Error(w, string(errFormated), http.StatusBadRequest)
-		return
-	}
+
 
 	if err := bdd.ModifyGameById(gameDto); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -171,3 +164,4 @@ func DeletedGame(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "jeu suppr")
 
 }
+
