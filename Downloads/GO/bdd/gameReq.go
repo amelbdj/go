@@ -108,17 +108,7 @@ func GetGameById(id int) ([]models.Game, error) {
 
 func ModifyGameById(game models.Game) error {
 
-	// Vérifie si le jeu existe
-
-	_, err := Conn.Query("SELECT id FROM partiel.game WHERE id = ?", game.Id)
-	if err != nil {
-
-		return fmt.Errorf("le jeu n'existe pas : %d", game.Id)
-
-	}
-
-	// Met à jour le jeu
-	_, err = Conn.Exec(
+	result, err := Conn.Exec(
 		"UPDATE partiel.game SET name = ?, price = ? WHERE id = ?",
 		game.Name,
 		game.Price,
@@ -128,8 +118,18 @@ func ModifyGameById(game models.Game) error {
 		return fmt.Errorf("mise à jour échouée : %v", err)
 	}
 
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rows == 0 {
+		return fmt.Errorf("aucun jeu trouvé avec l'id %d", game.Id)
+	}
+
 	return nil
 }
+
 
 func DeletedGame(id int) error {
 
