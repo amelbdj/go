@@ -112,36 +112,40 @@ func GetGameByName(w http.ResponseWriter, r *http.Request) {
 }
 
 func ModifyGameById(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, `{"error":"ID invalide"}`, http.StatusBadRequest)
+		return
+	}
 
 	var gameDto models.Game
-	err := json.NewDecoder(r.Body).Decode(&gameDto)
-
-	if err != nil {
-		http.Error(w,
-			"Impossible de décoder un modèle user au format json",
-			http.StatusBadRequest)
-		return
-
-	}
-
-	err = bdd.ModifyGameById(gameDto)
-	if err != nil {
-		http.Error(w,
-			"erreur dans la MODIF d'un jeu",
-			http.StatusInternalServerError)
+	if err := json.NewDecoder(r.Body).Decode(&gameDto); err != nil {
+		http.Error(w, "JSON invalide", http.StatusBadRequest)
 		return
 	}
-	var errorMsgs = verifyGameDto(gameDto)
 
+	// 🔴 LIGNE CRUCIALE
+	gameDto.Id = id
+
+	// ✅ validation AVANT la BDD
+	errorMsgs := verifyGameDto(gameDto)
 	if len(errorMsgs) > 0 {
-		var errFormated, _ = json.Marshal(errorMsgs)
+		errFormated, _ := json.Marshal(errorMsgs)
 		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, string(errFormated), http.StatusBadRequest)
 		return
-
 	}
 
+	if err := bdd.ModifyGameById(gameDto); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
+
 
 func DeletedGame(w http.ResponseWriter, r *http.Request) {
 
